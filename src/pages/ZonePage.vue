@@ -1,17 +1,15 @@
 <!-- Page to add Zones -->
 
-
 <template>
   <div>
-    <base-header></base-header>
     <v-container>
       <v-card>
-        <v-card-text
+        <v-card-text class="mb-2"
           ><v-row
             ><span class="black--text font-weight-bold">Containment Zone</span>
             <v-spacer></v-spacer>
             <v-btn color="primary" @click="openDialog"
-              >Add Contaiment Zone</v-btn
+              >Add Containment Zone</v-btn
             ></v-row
           ></v-card-text
         >
@@ -21,7 +19,6 @@
       </v-card>
     </v-container>
 
-    <base-footer></base-footer>
     <v-dialog v-model="showDialog" max-width="60%">
       <v-form ref="zones"
         ><v-card
@@ -152,9 +149,9 @@
   </div>
 </template>
 <script>
-import { collection, addDoc } from "firebase/firestore"; 
-import { getDocs } from "firebase/firestore"; 
-import db from '../main'
+import { collection, addDoc } from "firebase/firestore";
+import { getDocs } from "firebase/firestore";
+import db from "../main";
 const pincode = require("pincode-lat-long");
 var pincodeDirectory = require("india-pincode-lookup");
 export default {
@@ -188,9 +185,7 @@ export default {
         { text: "Area", value: "district" },
         { text: "Containment level", value: "conlevel" },
       ],
-      zones: [
-        
-      ],
+      zones: [],
       url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
       attribution:
         '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
@@ -225,13 +220,13 @@ export default {
     this.getZones();
   },
   methods: {
-   async getZones(){
+    async getZones() {
       const querySnapshot = await getDocs(collection(db.db, "zones"));
       let tempArr = [];
       querySnapshot.forEach((doc) => {
-        tempArr.push(doc.data())
-});
-  this.zones = tempArr
+        tempArr.push(doc.data());
+      });
+      this.zones = tempArr;
     },
     getLocation() {
       if (navigator.geolocation) {
@@ -288,7 +283,7 @@ export default {
           "";
       this.showDialog = false;
     },
-   async  addZone() {
+    async addZone() {
       let zoneObj = {
         zone: this.zone,
         country: this.country,
@@ -298,13 +293,17 @@ export default {
         conlevel: this.selectedCL,
       };
       try {
-  await addDoc(collection(db.db, "zones",), zoneObj);
-  this.$notify({group:'foo',type: 'success',text:`Sucessfully Added zone ${this.zone}`})
-  this.showDialog=false;
-  this.getZones()
-} catch (e) {
-  this.$notify({group:'foo',type: 'error',text:e.message})
-}
+        await addDoc(collection(db.db, "zones"), zoneObj);
+        this.$notify({
+          group: "foo",
+          type: "success",
+          text: `Sucessfully Added zone ${this.zone}`,
+        });
+        this.showDialog = false;
+        this.getZones();
+      } catch (e) {
+        this.$notify({ group: "foo", type: "error", text: e.message });
+      }
     },
   },
 };

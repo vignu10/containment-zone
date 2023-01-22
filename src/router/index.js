@@ -7,28 +7,31 @@ const routes = [
   {
     name: "home",
     path: "/",
-    redirect: "login",
+    redirect: "/home/login",
   },
   {
-    name: "LogIn",
-    path: "/login",
-    component: () => import("../components/LoginPage"),
+    name: "header",
+    path: "/home",
+    component: () => import("../pages/HeaderVue.vue"),
+    children: [
+      {
+        name: "Login",
+        path: "login",
+        component: () => import("../pages/LoginPage.vue"),
+      },
+      {
+        name: "Signup",
+        path: "signup",
+        component: () => import("../pages/SignUpPage.vue"),
+      },
+
+      {
+        name: "ZonePage",
+        path: "zones",
+        component: () => import("../pages/ZonePage.vue"),
+      },
+    ],
   },
-  {
-    name: "SignUp",
-    path: "/signup",
-    component: () => import("../components/SignupPage"),
-  },
-  {
-    name: "ForgotPassword",
-    path: "/forgot",
-    component: () => import("../components/ForgotPassword.vue"),
-  },
-  {
-    name: 'ZonePage',
-    path: '/zones',
-    component:() => import('../views/ZonePage.vue')
-  }
 ];
 
 const router = new VueRouter({

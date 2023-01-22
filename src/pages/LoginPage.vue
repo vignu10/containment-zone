@@ -1,25 +1,7 @@
-<!-- Login page to members to login -->
-
 <template>
   <div>
-    <base-header></base-header>
     <v-row>
-      <v-col cols="6" class="mr-0"
-        ><v-carousel
-          cycle
-          height="96vh"
-          hide-delimiters
-          hide-delimiter-background
-          show-arrows-on-hover
-          reverse-transition="fade-transition"
-          transition="fade-transition"
-          ><v-carousel-item
-            v-for="(item, i) in imageItems"
-            :key="i"
-            :src="item.src"
-          ></v-carousel-item></v-carousel
-      ></v-col>
-      <v-col cols="6">
+      <v-col>
         <v-card elevation="2" class="loginCard">
           <v-form @submit.prevent="login()" ref="loginForm">
             <v-banner><h3>LOGIN</h3></v-banner>
@@ -32,6 +14,7 @@
                       outlined
                       v-model="loginEmail"
                       autocomplete="off"
+                      hide-details="auto"
                     >
                     </v-text-field
                   ></v-col>
@@ -47,6 +30,7 @@
                       v-model="loginPassword"
                       label="Password"
                       hint="At least 8 characters"
+                      hide-details="auto"
                       @click:append="passwordVisible = !passwordVisible"
                     >
                     </v-text-field>
@@ -56,11 +40,10 @@
             </v-row>
 
             <v-row>
-              <v-col class="">
-                
-                  <v-btn @click="login">LOGIN</v-btn></v-col
+              <v-col class="text-right">
+                <v-btn @click="login">LOGIN</v-btn></v-col
               ><v-col
-                ><router-link to="/signup" right>
+                ><router-link to="/home/signup" right>
                   <v-btn>SIGNUP</v-btn></router-link
                 ></v-col
               ></v-row
@@ -69,38 +52,43 @@
         </v-card>
       </v-col>
     </v-row>
-    <base-footer></base-footer>
   </div>
 </template>
-
 <script>
-import BaseFooter from "@/UI/BaseFooter.vue";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 export default {
-  components: { BaseFooter },
   mounted() {
     this.$refs.loginForm.reset();
   },
-  methods:{
-        login(){
-          const auth = getAuth();
-    signInWithEmailAndPassword(auth, this.loginEmail, this.loginPassword)
-  .then((userCredential) => {
-    // Signed in 
-    const user = userCredential.user;
-    userCredential.user.displayName= this.name;
-    console.log(user)
-    this.$notify({group:'foo',type: 'success',text:`Sucessfully Signed by  ${userCredential.user.displayName}`})
-    this.$router.push('/zones')
-    // ...
-  })
-  .catch((error) => {
-    const errorMessage = error.message;
-    this.$notify({group:'foo',type:'error',title:'Error',text:errorMessage})
-    // ..
-  });
-        }
-      },
+  methods: {
+    login() {
+      const auth = getAuth();
+      signInWithEmailAndPassword(auth, this.loginEmail, this.loginPassword)
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          userCredential.user.displayName = this.name;
+          console.log(user);
+          this.$notify({
+            group: "foo",
+            type: "success",
+            text: `Sucessfully Signed by  ${userCredential.user.displayName}`,
+          });
+          this.$router.push("/home/zones");
+          // ...
+        })
+        .catch((error) => {
+          const errorMessage = error.message;
+          this.$notify({
+            group: "foo",
+            type: "error",
+            title: "Error",
+            text: errorMessage,
+          });
+          // ..
+        });
+    },
+  },
   data() {
     return {
       loginEmail: "",
@@ -128,7 +116,7 @@ export default {
 .theme--dark .input:-internal-autofill-selected
   background-color: #1e1e1e
 </style>
-<style scoped >
+<style scoped>
 header {
   display: flex;
   justify-content: space-between;
@@ -138,7 +126,6 @@ header {
   display: flex;
   align-content: space-between;
 }
-
 a {
   text-decoration: none;
 }
@@ -146,7 +133,7 @@ a {
   margin: 10rem auto;
   max-width: 45rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+  box-shadow: 0 2px 8px rgba(122, 0, 0, 0.8);
   padding: 2rem;
   align-items: center;
   justify-content: center;
