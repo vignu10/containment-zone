@@ -12,12 +12,13 @@ import { getFirestore } from "firebase/firestore";
 import velocity from "velocity-animate";
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDSbMHI9m4ZfpCzmBd-FbQDtJ3XtwNfuNU",
-  authDomain: "containment-zone-82c2d.firebaseapp.com",
-  projectId: "containment-zone-82c2d",
-  storageBucket: "containment-zone-82c2d.appspot.com",
-  messagingSenderId: "1071700823306",
-  appId: "1:1071700823306:web:396f7cd96269d2755a7ef3",
+  apiKey: "AIzaSyANcYPKPuXRySixB5GGmH-cU3yC__xOyUY",
+  authDomain: "espfinalyear.firebaseapp.com",
+  projectId: "espfinalyear",
+  storageBucket: "espfinalyear.appspot.com",
+  messagingSenderId: "568245041452",
+  appId: "1:568245041452:web:1c11b8d5b9710c4aee1489",
+  measurementId: "G-23JJ9XMKCL",
 };
 
 // Initialize Firebase

@@ -3,189 +3,260 @@
 <template>
   <div>
     <v-container>
-      <v-card>
-        <v-card-text class="mb-2"
-          ><v-row
-            ><span class="black--text font-weight-bold">Containment Zone</span>
-            <v-spacer></v-spacer>
-            <v-btn color="primary" @click="openDialog"
-              >Add Containment Zone</v-btn
-            ></v-row
-          ></v-card-text
-        >
-        <v-card>
-          <v-data-table :headers="headers" :items="zones"></v-data-table>
-        </v-card>
+      <v-card class="pa-3">
+        <v-row no-gutters>
+          <v-col cols="12">
+            <v-row no-gutters>
+              <v-col cols="4" class="text-left">
+                <v-text-field
+                  class="mb-3"
+                  max-width="40"
+                  v-model="searchTable"
+                  append-icon="search"
+                  label="Search"
+                  outlined
+                  hide-details="auto"
+                ></v-text-field>
+              </v-col>
+              <v-spacer></v-spacer>
+              <v-col class="align-self-center text-right">
+                <v-row no-gutters>
+                  <v-col>
+                    <v-tooltip bottom>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          color="primary"
+                          v-bind="attrs"
+                          v-on="on"
+                          large
+                          @click="getUsers"
+                        >
+                          refresh
+                        </v-icon>
+                      </template>
+                      <span>Refresh</span>
+                    </v-tooltip>
+                  </v-col>
+                  <v-col cols="2">
+                    <v-menu v-model="showMenu" absolute>
+                      <template v-slot:activator="{ on: menu, attrs }">
+                        <v-tooltip bottom>
+                          <template v-slot:activator="{ on: tooltip }">
+                            <v-btn
+                              icon
+                              v-bind="attrs"
+                              v-on="{ ...tooltip, ...menu }"
+                            >
+                              <v-icon
+                                class="material-symbols-outlined"
+                                large
+                                color="primary"
+                                >filter_alt</v-icon
+                              >
+                            </v-btn>
+                          </template>
+                          <span>Filter users</span>
+                        </v-tooltip>
+                      </template>
+                      <v-list style="border: 1px solid grey">
+                        <v-list-item @click="filter('All')">
+                          <v-list-item-title>All</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item @click="filter('Available')">
+                          <v-list-item-title>Available</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item @click="filter('Away')">
+                          <v-list-item-title>Away</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item @click="filter('Do not disturb')">
+                          <v-list-item-title>Do not disturb</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item @click="filter('In a meeting')">
+                          <v-list-item-title>In a meeting</v-list-item-title>
+                        </v-list-item>
+                      </v-list>
+                    </v-menu>
+                  </v-col>
+                  <v-col cols="2">
+                    <v-tooltip bottom v-if="!invisible">
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          class="material-symbols-outlined"
+                          color="primary"
+                          large
+                          v-bind="attrs"
+                          v-on="on"
+                          @click="invisible = true"
+                          >visibility</v-icon
+                        > </template
+                      ><span>Hide device address</span></v-tooltip
+                    >
+                    <v-tooltip bottom v-if="invisible">
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          large
+                          v-bind="attrs"
+                          v-on="on"
+                          class="material-symbols-outlined"
+                          color="primary"
+                          @click="invisible = false"
+                          >visibility_off</v-icon
+                        > </template
+                      ><span>Unhide device address</span></v-tooltip
+                    >
+                  </v-col>
+                </v-row>
+              </v-col>
+            </v-row>
+            <v-row no-gutters
+              ><v-col>
+                <v-data-table
+                  :headers="headers"
+                  :search="searchTable"
+                  :items="filteredObjs"
+                  :loading="tableLoading"
+                  class="users-table"
+                >
+                  <template v-slot:[`item.name`]="{ item }">
+                    {{
+                      item.name != null &&
+                      item.name != "" &&
+                      item.name != undefined
+                        ? item.name
+                        : "-"
+                    }}
+                  </template>
+                  <template v-slot:[`item.email`]="{ item }">
+                    {{
+                      item.email != null &&
+                      item.email != "" &&
+                      item.email != undefined
+                        ? item.email
+                        : "-"
+                    }}
+                  </template>
+                  <template v-slot:[`item.phoneNumber`]="{ item }">
+                    {{
+                      item.phoneNumber != null &&
+                      item.phoneNumber != "" &&
+                      item.phoneNumber != undefined
+                        ? item.phoneNumber
+                        : "-"
+                    }}
+                  </template>
+                  <template v-slot:[`item.category`]="{ item }">
+                    {{
+                      item.category != null &&
+                      item.category != "" &&
+                      item.category != undefined
+                        ? item.category.toString()
+                        : "-"
+                    }}
+                  </template>
+                  <template v-slot:[`item.status`]="{ item }">
+                    <v-chip :color="getColor(item.status)" text-color="white"
+                      >{{ item.status }}
+                    </v-chip>
+                  </template>
+
+                  <template v-slot:[`item.deviceAddress`]="{ item }">
+                    <v-row no-gutters>
+                      <v-col cols="10">
+                        <span v-if="invisible" class="pr-4">********</span>
+                        <span v-if="!invisible" class="pr-4">{{
+                          item.deviceAddress !== "" &&
+                          item.deviceAddress != undefined &&
+                          item.deviceAddress != null
+                            ? item.deviceAddress
+                            : "Device address not available"
+                        }}</span>
+                      </v-col>
+                      <v-col cols="1" class="pa-0 ma-0 align-self-center">
+                        <v-edit-dialog
+                          large
+                          left
+                          @open="setDeviceAddress(item)"
+                          @save="saveDeviceAddress(item.uid)"
+                        >
+                          <v-tooltip bottom>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-icon
+                                class="material-symbols-outlined"
+                                color="primary"
+                                small
+                                v-bind="attrs"
+                                v-on="on"
+                                >edit</v-icon
+                              >
+                            </template>
+                            <span>Edit or Add Device address</span>
+                          </v-tooltip>
+                          <template v-slot:input>
+                            <p class="mt-5">Enter Device address</p>
+                            <v-text-field
+                              v-model="deviceAddress"
+                              maxlength="20"
+                              hide-details="auto"
+                            ></v-text-field
+                          ></template>
+                        </v-edit-dialog>
+                      </v-col>
+                    </v-row>
+                  </template>
+                </v-data-table> </v-col
+            ></v-row>
+          </v-col>
+        </v-row>
       </v-card>
     </v-container>
-
-    <v-dialog v-model="showDialog" max-width="60%">
-      <v-form ref="zones"
-        ><v-card
-          ><v-card-title>Add Contaiment Zones</v-card-title
-          ><v-divider></v-divider
-          ><v-card-actions
-            ><v-container
-              ><v-row no-gutters>
-                <v-col cols="12">
-                  <v-expansion-panels class="ml-0 mb-7" multiple v-model="panel"
-                    ><v-expansion-panel
-                      ><v-expansion-panel-header class="pl-0"
-                        ><span
-                          >Show on map <span class="red--text"> *</span></span
-                        ></v-expansion-panel-header
-                      ><v-expansion-panel-content
-                        ><l-map
-                          style="height: 350px"
-                          :zoom="zoom"
-                          :center="center"
-                          @update:zoom="zoomUpdated"
-                          @update:bounds="boundsUpdated"
-                        >
-                          <l-tile-layer
-                            :url="url"
-                            :attribution="attribution"
-                          ></l-tile-layer>
-                          <l-marker
-                            :lat-lng="markerLatLng"
-                          ></l-marker> </l-map></v-expansion-panel-content></v-expansion-panel
-                  ></v-expansion-panels>
-                </v-col> </v-row
-              ><v-row no-gutters>
-                <v-col cols="2" class="text-left mb-6 align-self-center"
-                  ><span
-                    >Zone Name <span class="red--text"> *</span></span
-                  ></v-col
-                >
-                <v-col cols="10"
-                  ><v-text-field
-                    outlined
-                    v-model="zone"
-                    :rules="[rules.required]"
-                  ></v-text-field
-                ></v-col> </v-row
-              ><v-row no-gutters>
-                <v-col cols="2" class="text-left mb-6 align-self-center"
-                  ><span>Pincode <span class="red--text"> *</span></span></v-col
-                >
-                <v-col cols="10"
-                  ><v-text-field
-                    outlined
-                    v-model="pincode"
-                    @keyup="getLatLng()"
-                    :rules="[rules.required]"
-                  ></v-text-field
-                ></v-col> </v-row
-              ><v-row no-gutters>
-                <v-col cols="2" class="text-left mb-6 align-self-center"
-                  ><span>Country <span class="red--text"> *</span></span></v-col
-                >
-                <v-col cols="10"
-                  ><v-text-field
-                    outlined
-                    v-model="country"
-                    :disabled="isTextFieldDisabled"
-                  >
-                  </v-text-field
-                ></v-col> </v-row
-              ><v-row no-gutters>
-                <v-col cols="2" class="text-left mb-6 align-self-center"
-                  ><span>State <span class="red--text"> *</span></span></v-col
-                >
-                <v-col cols="10"
-                  ><v-text-field
-                    outlined
-                    v-model="state"
-                    :disabled="isTextFieldDisabled"
-                  ></v-text-field
-                ></v-col> </v-row
-              ><v-row no-gutters>
-                <v-col cols="2" class="text-left mb-6 align-self-center"
-                  ><span
-                    >District <span class="red--text"> *</span></span
-                  ></v-col
-                >
-                <v-col cols="10"
-                  ><v-text-field
-                    outlined
-                    v-model="district"
-                    :disabled="isTextFieldDisabled"
-                  >
-                  </v-text-field
-                ></v-col> </v-row
-              ><v-row no-gutters>
-                <v-col cols="2" class="text-left mb-6 align-self-center"
-                  ><span
-                    >Containment Level<span class="red--text"> *</span></span
-                  ></v-col
-                >
-                <v-col cols="10"
-                  ><v-select
-                    outlined
-                    :items="containmentLevel"
-                    v-model="selectedCL"
-                  ></v-select
-                ></v-col>
-              </v-row>
-              <v-row>
-                <v-col class="text-right">
-                  <v-btn class="pa-3 mr-2 text-right" @click="cancel"
-                    >Cancel</v-btn
-                  >
-                  <v-btn
-                    class="pa-3"
-                    color="primary"
-                    @click="addZone"
-                    :disabled="isSubmitDisabled"
-                    >Submit</v-btn
-                  ></v-col
-                ></v-row
-              ></v-container
-            >
-          </v-card-actions></v-card
-        ></v-form
-      ></v-dialog
-    >
   </div>
 </template>
 <script>
-import { collection, addDoc } from "firebase/firestore";
-import { getDocs } from "firebase/firestore";
+import { collection } from "firebase/firestore";
+import { getDocs, doc, updateDoc } from "firebase/firestore";
 import db from "../main";
 const pincode = require("pincode-lat-long");
 var pincodeDirectory = require("india-pincode-lookup");
 export default {
   data() {
     return {
+      showMenu: false,
+      searchTable: "",
+      filteredObjs: [],
+      invisible: true,
+      tableLoading: false,
       panel: [0],
       isTextFieldDisabled: false,
       rules: {
         required: (value) => !!value || "This Field is Required.",
       },
-      zone: "",
-      country: "India",
-      state: "",
-      pincode: "",
-      district: "",
-      containmentLevel: ["HIGH", "MEDIUM", "LOW"],
-      selectedCL: "",
       showDialog: false,
+      deviceAddress: "",
       zoneToBeAdded: {},
       pinCodeLatLong: {},
+      items: [
+        { title: "Click Me" },
+        { title: "Click Me" },
+        { title: "Click Me" },
+        { title: "Click Me 2" },
+      ],
       headers: [
         {
-          text: "Contaiment Zone",
-          value: "zone",
+          text: "Name",
+          value: "userName",
+          align: "center",
         },
         {
-          text: "Country",
-          value: "country",
+          text: "Email",
+          value: "email",
+          align: "center",
         },
-        { text: "State", value: "state" },
-        { text: "Area", value: "district" },
-        { text: "Containment level", value: "conlevel" },
+        { text: "Phone number", value: "phoneNumber", align: "center" },
+        { text: "Status", value: "status", align: "center" },
+        { text: "Department", value: "category", align: "center" },
+        { text: "Device address", value: "deviceAddress", align: "center" },
       ],
-      zones: [],
+      users: [],
       url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
       attribution:
         '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
@@ -217,16 +288,78 @@ export default {
   },
   mounted() {
     this.getLocation();
-    this.getZones();
+    this.getUsers();
   },
   methods: {
-    async getZones() {
-      const querySnapshot = await getDocs(collection(db.db, "zones"));
+    filter(type) {
+      this.filteredObjs = this.users;
+      switch (type) {
+        case "All": {
+          this.filteredObjs = this.users;
+          break;
+        }
+        case "Available": {
+          this.filteredObjs = this.filteredObjs.filter(
+            (a) => a.status == "Available"
+          );
+          break;
+        }
+        case "Away": {
+          this.filteredObjs = this.filteredObjs.filter(
+            (a) => a.status == "Away"
+          );
+          break;
+        }
+        case "Do not disturb": {
+          this.filteredObjs = this.filteredObjs.filter(
+            (a) => a.status == "Do not disturb"
+          );
+          break;
+        }
+        case "In a meeting": {
+          this.filteredObjs = this.filteredObjs.filter(
+            (a) => a.status == "In a meeting"
+          );
+          break;
+        }
+        default: {
+          this.filteredObjs = this.users;
+        }
+      }
+    },
+    getColor(status) {
+      switch (status) {
+        case "Available": {
+          return "#00ff00";
+        }
+        case "Away": {
+          return "yellow";
+        }
+        case "Do not disturb": {
+          return "red";
+        }
+        case "In a meeting": {
+          return "purple";
+        }
+        case "On leave": {
+          return "#66666";
+        }
+      }
+    },
+    setDeviceAddress(item) {
+      this.deviceAddress = item.deviceAddress;
+    },
+    async getUsers() {
+      this.tableLoading = true;
+      const querySnapshot = await getDocs(collection(db.db, "Worker"));
       let tempArr = [];
       querySnapshot.forEach((doc) => {
         tempArr.push(doc.data());
       });
-      this.zones = tempArr;
+
+      this.users = tempArr;
+      this.filteredObjs = this.users;
+      this.tableLoading = false;
     },
     getLocation() {
       if (navigator.geolocation) {
@@ -283,24 +416,27 @@ export default {
           "";
       this.showDialog = false;
     },
-    async addZone() {
-      let zoneObj = {
-        zone: this.zone,
-        country: this.country,
-        state: this.state,
-        district: this.district,
-        pincode: this.pincode,
-        conlevel: this.selectedCL,
-      };
+    async saveDeviceAddress(uid) {
       try {
-        await addDoc(collection(db.db, "zones"), zoneObj);
+        if (
+          this.deviceAddress != null &&
+          this.deviceAddress != "" &&
+          this.deviceAddress != undefined
+        ) {
+          const docRef = doc(db.db, "Worker", uid);
+          let updateData = { deviceAddress: this.deviceAddress };
+          updateDoc(docRef, updateData);
+          this.getUsers();
+        } else {
+          throw "Please enter a valid value";
+        }
+
         this.$notify({
           group: "foo",
           type: "success",
-          text: `Sucessfully Added zone ${this.zone}`,
+          text: `Sucessfully Added device address`,
         });
         this.showDialog = false;
-        this.getZones();
       } catch (e) {
         this.$notify({ group: "foo", type: "error", text: e.message });
       }
@@ -311,4 +447,8 @@ export default {
 <style lang="sass" scoped>
 .theme--dark.v-application span
   color: white
+
+
+.border-radius-root
+  border: 1px solid grey !important
 </style>

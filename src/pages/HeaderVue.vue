@@ -3,7 +3,7 @@
     <v-system-bar height="50" color="primary" window>
       <v-row no-gutters>
         <v-col class="text-left align-self-center white--text">
-          <header><b> Containment Zone </b></header></v-col
+          <header><b> Track wise </b></header></v-col
         >
         <v-col class="text-right" cols="5"
           ><v-col
@@ -20,7 +20,7 @@
     <v-footer absolute class="pa-0">
       <v-row justify="center" no-gutters>
         <v-col class="primary py-4 text-center white--text" cols="12">
-          {{ new Date().getFullYear() }} — <strong>Containment Zone</strong>
+          {{ new Date().getFullYear() }} — <strong>Track wise</strong>
         </v-col>
         <notifications group="foo" animation-type="velocity" />
       </v-row>
